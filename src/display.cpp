@@ -1,49 +1,56 @@
 #include "display.h"
 #include "battery_monitor.h"
+#define OLED_RESET -1
 
 Display myDisplay;
-
-#define OLED_RESET -1
 Adafruit_SSD1306 display(OLED_RESET);
 
-
+//Display init function
 void Display::init() {
-  // Initialize display
-  display.begin(SSD1306_SWITCHCAPVCC, 0x3C); //0x3C = Adress
-  display.clearDisplay(); // clear buffer
-  display.display();
+  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Address 0x3C for 128x64
+    Serial.println(F("SSD1306 allocation failed"));
+    for (;;); // Don't proceed, loop forever
+  }
+  
+  display.clearDisplay();
+  display.setTextSize(1);
   display.setRotation(2);
   display.setTextColor(WHITE);
   display.setCursor(0, 0);
-  display.println("Initialized");
-
-  delay(5000);
+  display.println("Initialized BMS");
+  display.display();
+  delay(1000);
+  display.clearDisplay();
 }
 
 
+//Display Output of the values
+void Display::Output(float cell1Voltage, float cell2Voltage, float cell3Voltage, float totalVoltage) {
 
-//Noch nicht funktionsfähig -> Stürzt ab sobald man es aufruft!
-void Display::Output() {
+    display.clearDisplay(); 
+  //Display Cell 1
+    display.setCursor(0, 0);
+    display.print("Cell 1: ");
+    display.print(cell1Voltage);
+    display.println(" V");
+  //Display Cell 2
+    display.setCursor(0, 10);
+    display.print("Cell 2: ");
+    display.print(cell2Voltage);
+    display.println(" V");
+  //Display Cell 3
+    display.setCursor(0, 20);
+    display.print("Cell 3: ");
+    display.print(cell3Voltage);
+    display.println(" V");
+  /*
+    display.setCursor(0, 30);
+    display.print("Total: ");
+    display.print(totalVoltage);
+    display.println(" V");
+  */
+    display.display(); 
 
-// Read cell voltages
-float cell1Voltage = getCellVoltage(cell1Pin, cell1Divider, cell1Calibration);
-float cell2Voltage = getCellVoltage(cell2Pin, cell2Divider, cell2Calibration) - cell1Voltage;
-float cell3Voltage = getCellVoltage(cell3Pin, cell3Divider, cell3Calibration) - cell1Voltage - cell2Voltage;
-
-// Display cell voltages
-display.setCursor(0, 0);
-display.println("Cell 1 : " + String(cell1Voltage, 3) + " V");
-display.println("Cell 2 : " + String(cell2Voltage, 3) + " V");
-display.println("Cell 3 : " + String(cell3Voltage, 3) + " V");
-display.println("Current : " + String(0, 3) + " A");
-
-// Display the screen
-display.display();
- // Regelmäßige Aktualisierung des Displays
-while (true) {
-display.display();
-delay(100);
-  }
 }
 
 

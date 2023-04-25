@@ -10,7 +10,7 @@
 #include <HardwareSerial.h>
 
 //Funktioniert noch nicht
-float getCellVoltage(int pin, float divider, float calibration); 
+
 
 extern const int cell1Pin;
 extern const int cell2Pin;
@@ -23,7 +23,6 @@ extern const float cell3Divider;
 extern const float cell1Calibration;
 extern const float cell2Calibration;
 extern const float cell3Calibration;
-
 
 
 

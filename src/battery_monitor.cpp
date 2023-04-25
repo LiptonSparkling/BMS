@@ -174,7 +174,8 @@ void BatteryMonitor::setup() {
     logFile.close(); // Close the log file after writing the header
   }
 
-  //Display initaliseren -> insert
+  //Display initaliseren 
+  myDisplay.init();
   
 }
 
@@ -200,7 +201,8 @@ void BatteryMonitor::loop() {
   Serial.println("V");
   
   //Display print of voltage values
-  myDisplay.init();
+  myDisplay.Output(cell1Voltage, cell2Voltage, cell3Voltage, totalVoltage);
+ 
 
 
   // Moving average filter for cell voltages
