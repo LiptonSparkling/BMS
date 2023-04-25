@@ -1,21 +1,23 @@
 #include "battery_monitor.h"
 #include "RFIDReader.h"
+#include "display.h"
 
 #define RST_PIN 9
 #define SS_PIN  10
 
 
+extern Display myDisplay; //Instanz der Displayklasse namens myDisplay erstellen extern without defining
 const int chipSelect = BUILTIN_SDCARD;
 
 RFIDReader rfidReader(SS_PIN, RST_PIN);
 
 // Voltage divider constants
 const float R1 = 10000.0;
-const float R2 = 2990.0;
+const float R2 = 2983.0;
 const float R3 = 10000.0;
-const float R4 = 15910.0;
-const float R5 = 9800.0;
-const float R6 = 29800.0;
+const float R4 = 15920.0;
+const float R5 = 9910.0;
+const float R6 = 29600.0;
 
 // Define Analog inputs
 const int cell1Pin = A0;
@@ -24,8 +26,8 @@ const int cell3Pin = A2;
 
 // Calibration constants for cell voltages
 const float cell1Calibration = 1.007696007696008;
-const float cell2Calibration = 1.009910;
-const float cell3Calibration = 0.9930155140186916;
+const float cell2Calibration = 1.009710;
+const float cell3Calibration = 1.014010;
 
 // Voltage divider calculations
 const float Vref = 3.3;
@@ -46,15 +48,15 @@ int cell3Index = 0;
 
 // Currentsensor
 const int currentSensorPin = A5;
-const float ACS712_OFFSET = 2.62;
+const float ACS712_OFFSET = 2.62; //set to offset from manifacturer
 float readCurrent(int pin, float sensitivity);
 
-// LED activation for logging
+// LED activation and logging
 bool loggingActive = false;
 bool sdCardConnected = true;
 const int ledPin = 13;
 char logFileNameChar[20];
-const float voltageThreshold = 2.0;
+const float voltageThreshold = 2.0; //Logging Threshold
 
 ADC *adc = new ADC();
 File logFile;
@@ -93,7 +95,7 @@ void BatteryMonitor::send_battery_status(float voltage1, float voltage2, float v
   Serial.println(voltage3, 3);
 
   float totalVoltage = voltage1 + voltage2 + voltage3;
-  uint16_t batteryVoltage = totalVoltage * 1000; // Convert total voltage to millivolts
+  
 
   // Calculate charge_state
   float cellVoltageAverage = totalVoltage / 3.0;
@@ -131,11 +133,11 @@ void BatteryMonitor::setup() {
   pinMode(cell2Pin, INPUT);
   pinMode(cell3Pin, INPUT);
 
-  //LED on Teensy for logging
-  pinMode(ledPin, OUTPUT); //LED pin as output
-
   // Currentpins 
   pinMode(currentSensorPin, INPUT);
+
+  //LED on Teensy for logging
+  pinMode(ledPin, OUTPUT); //LED pin as output
 
   // ADC configuration
   adc->adc0->setAveraging(4); // Mittelung auf 4 Messungen einstellen
@@ -144,10 +146,11 @@ void BatteryMonitor::setup() {
   adc->adc0->setSamplingSpeed(ADC_SAMPLING_SPEED::HIGH_SPEED);
   adc->adc0->setReference(ADC_REFERENCE::REF_3V3); // Referenzspannung auf 3,3V einstellen
 
-
+  ///Logging
   // SD card initialization
   if (!SD.begin(chipSelect)) {
-    Serial.println("SD card initialization failed!");
+    Serial.print("SD card initialization failed!");
+    Serial.println("NO SD CARD");
     sdCardConnected = false;
   } else {
     Serial.println("SD card initialized.");
@@ -166,18 +169,26 @@ void BatteryMonitor::setup() {
   if (!logFile) {
     Serial.println("Error opening log file");
   } else {
-    // Write the header
+  // Write the header of the log file
     logFile.println("Timestamp (s),Cell 1 (V),Cell 2 (V),Cell 3 (V),Total Voltage (V)");
     logFile.close(); // Close the log file after writing the header
   }
+
+  //Display initaliseren -> insert
+  
 }
 
+
+
 void BatteryMonitor::loop() {
+
+  //Reading voltages
   float cell1Voltage = (adc->adc0->analogRead(cell1Pin) * Vref / 4095.0) * cell1Divider * cell1Calibration;
   float cell2Voltage = (adc->adc0->analogRead(cell2Pin) * Vref / 4095.0) * cell2Divider * cell2Calibration - cell1Voltage;
   float cell3Voltage = (adc->adc0->analogRead(cell3Pin) * Vref / 4095.0) * cell3Divider * cell3Calibration - cell1Voltage - cell2Voltage;
   float totalVoltage = cell1Voltage + cell2Voltage + cell3Voltage; // Total voltage calculation and output message
 
+ //Serial print of voltages
   Serial.print("Cell 1: ");
   Serial.print(cell1Voltage, 3);
   Serial.print("V, Cell 2: ");
@@ -188,12 +199,9 @@ void BatteryMonitor::loop() {
   Serial.print(totalVoltage, 2);
   Serial.println("V");
   
+  //Display print of voltage values
+  myDisplay.init();
 
-  // Current reading printing
-  float current = readCurrent(currentSensorPin, 0.066 ); // Ersetzen Sie 0.185 durch die Sensitivität Ihres Sensors
-  Serial.print("Strom: ");
-  Serial.print(current, 2);
-  Serial.println(" A");
 
   // Moving average filter for cell voltages
   cell1Voltages[cell1Index] = cell1Voltage;
@@ -222,7 +230,11 @@ void BatteryMonitor::loop() {
   cell2Voltage = cell2Filtered;
   cell3Voltage = cell3Filtered;
 
-
+   // Current reading printing
+  float current = readCurrent(currentSensorPin, 0.066 ); // Ersetzen Sie 0.185 durch die Sensitivität Ihres Sensors
+  Serial.print("Strom: ");
+  Serial.print(current, 2);
+  Serial.println(" A");
 
   // Write data to the log file
   if (cell1Voltage > voltageThreshold || cell2Voltage > voltageThreshold || cell3Voltage > voltageThreshold) {
@@ -256,11 +268,13 @@ void BatteryMonitor::loop() {
   } else {
     digitalWrite(ledPin, LOW);
   }
-
+  // Mavlink message send cell voltages
   send_battery_status(cell1Voltage, cell2Voltage, cell3Voltage);
 
- /*
-  RFID reading
+
+  /*
+  
+  readCard
     if (rfidReader.readCard()) {
     Serial.print("Serial Number: ");
     Serial.println(rfidReader.getSerialNumber());
@@ -273,6 +287,7 @@ void BatteryMonitor::loop() {
     Serial.print("Max Capacity Percent: ");
     Serial.println(rfidReader.getMaxCapacityPercent());
   }
+
 */
   delay(1000); // Wait for 1 second
 

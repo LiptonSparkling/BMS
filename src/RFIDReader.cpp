@@ -66,4 +66,3 @@ float RFIDReader::getCellVoltage() {
 byte RFIDReader::getMaxCapacityPercent() {
   return _buffer[6];
 }
-
