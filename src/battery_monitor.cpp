@@ -5,11 +5,18 @@
 #define RST_PIN 9
 #define SS_PIN  10
 
-
 extern Display myDisplay; //Instanz der Displayklasse namens myDisplay erstellen extern without defining
 const int chipSelect = BUILTIN_SDCARD;
 
 RFIDReader rfidReader(SS_PIN, RST_PIN);
+
+// Define Batterytype
+int Batterytype = 1; 
+//0 = Type unknown
+//1 = LiPo
+//2 = LiFe
+//3 = LiIon
+//4 = NiMh
 
 // Voltage divider constants
 const float R1 = 10000.0;
@@ -61,14 +68,9 @@ const float voltageThreshold = 2.0; //Logging Threshold
 ADC *adc = new ADC();
 File logFile;
 
-//Reading current
-  float readCurrent(int pin, float sensitivity) {
-  float voltage = (adc->adc0->analogRead(pin) * Vref / 4095.0);
-  float current = (voltage - ACS712_OFFSET) / sensitivity;
-  return current;
-  }
 
-String BatteryMonitor::getNextLogFileName() {
+
+  String BatteryMonitor::getNextLogFileName() {
   uint16_t fileNumber = 0;
   String fileName;
   char fileNameChar[20];
@@ -111,16 +113,24 @@ void BatteryMonitor::send_battery_status(float voltage1, float voltage2, float v
     chargeState = map(cellVoltageAverage, cellVoltageMin, 3.7, percentageMin, 20);
   }
 
-  // Constrain chargeState between 0 and 100
+  // Constrain the chargeState between 0 and 100
   chargeState = constrain(chargeState, 0, 100);
 
+
+  // Mavlink
+  /*
+   mavlink_msg_battery_status_pack(system_id, component_id, &msg, 
+                                battery_id, battery_function, battery_type,
+                                temperature, voltages, current_battery,
+                                current_consumed, energy_consumed, battery_remaining);
+
+  */
   mavlink_message_t msg;
   uint8_t buf[MAVLINK_MAX_PACKET_LEN];
-
   uint16_t voltages[10] = {voltage1 * 1000, voltage2 * 1000, voltage3 * 1000, 0, 0, 0, 0, 0, 0, 0}; //Mavlink needs voltage in mA
-  mavlink_msg_battery_status_pack(1, 200, &msg, 0, 0, 0, INT16_MIN, voltages, -1, -1, -1, -1, -1, chargeState);
+  mavlink_msg_battery_status_pack(1, 200, &msg, 0, 0, Batterytype, INT16_MIN, voltages, -1, -1, -1, -1, -1, chargeState);
   uint16_t len = mavlink_msg_to_send_buffer(buf, &msg);
-  Serial2.write(buf, len);
+  Serial2.write(buf, len); //send over serial 2 
 }
 
 void BatteryMonitor::setup() {
@@ -232,11 +242,7 @@ void BatteryMonitor::loop() {
   cell2Voltage = cell2Filtered;
   cell3Voltage = cell3Filtered;
 
-   // Current reading printing
-  float current = readCurrent(currentSensorPin, 0.066 ); // Ersetzen Sie 0.185 durch die Sensitivität Ihres Sensors
-  Serial.print("Strom: ");
-  Serial.print(current, 2);
-  Serial.println(" A");
+  
 
   // Write data to the log file
   if (cell1Voltage > voltageThreshold || cell2Voltage > voltageThreshold || cell3Voltage > voltageThreshold) {
@@ -270,6 +276,8 @@ void BatteryMonitor::loop() {
   } else {
     digitalWrite(ledPin, LOW);
   }
+
+
   // Mavlink message send cell voltages
   send_battery_status(cell1Voltage, cell2Voltage, cell3Voltage);
 
