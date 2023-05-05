@@ -66,3 +66,29 @@ float RFIDReader::getCellVoltage() {
 byte RFIDReader::getMaxCapacityPercent() {
   return _buffer[6];
 }
+
+ /*
+void RFIDReader::displayinformation()
+
+{
+
+
+}
+
+
+  
+  readCard
+    if (rfidReader.readCard()) {
+    Serial.print("Serial Number: ");
+    Serial.println(rfidReader.getSerialNumber());
+    Serial.print("Capacity: ");
+    Serial.println(rfidReader.getCapacity());
+    Serial.print("Number of Cells: ");
+    Serial.println(rfidReader.getNumCells());
+    Serial.print("Cell Voltage: ");
+    Serial.println(rfidReader.getCellVoltage(), 2);
+    Serial.print("Max Capacity Percent: ");
+    Serial.println(rfidReader.getMaxCapacityPercent());
+  }
+
+*/

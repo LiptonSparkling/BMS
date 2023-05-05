@@ -9,9 +9,8 @@
 #include "SD.h"
 #include <HardwareSerial.h>
 
-//Funktioniert noch nicht
 
-
+/*
 extern const int cell1Pin;
 extern const int cell2Pin;
 extern const int cell3Pin;
@@ -24,7 +23,7 @@ extern const float cell1Calibration;
 extern const float cell2Calibration;
 extern const float cell3Calibration;
 
-
+*/
 
 // BATTERY_MONITOR_H
 class BatteryMonitor {
