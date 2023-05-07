@@ -1,6 +1,5 @@
 //#include <Arduino.h>
 #include "battery_monitor.h"
-#include "RFIDReader.h"
 
 BatteryMonitor batteryMonitor;
 

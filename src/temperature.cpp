@@ -1,5 +1,7 @@
 #include "temperature.h"
 
+
+//constructor für SPI communication
 Temperature::Temperature(uint8_t cs1, uint8_t cs2, uint8_t cs3, uint8_t mosi, uint8_t miso, uint8_t clk, float ref_resistance) : 
   _max31865_1(cs1, mosi, miso, clk), 
   _max31865_2(cs2, mosi, miso, clk), 

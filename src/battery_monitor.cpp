@@ -1,9 +1,8 @@
 #include "battery_monitor.h"
 #include "RFIDReader.h"
-#include "display.h"
+//#include "display.h"
 #include "current.h"
 #include "temperature.h"
-
 
 // Define pins for Mavlink 
 #define RST_PIN 9
@@ -11,14 +10,12 @@
 
 
 //Objects
-extern Display myDisplay; 
+//extern Display myDisplay; 
 extern Current current;
 Temperature temp(MAX31865_CS_1, MAX31865_CS_2, MAX31865_CS_3, MAX31865_MOSI, MAX31865_MISO, MAX31865_CLK, RTD_REF_RESISTANCE);
 RFIDReader rfidReader(SS_PIN, RST_PIN);
 
-
 const int chipSelect = BUILTIN_SDCARD;
-
 
 // Define Batterytype -> Choose
 int Batterytype = 1; 
@@ -80,7 +77,6 @@ const float voltageThreshold = 2.0; //Logging Threshold
 ADC *adc = new ADC();
 File logFile;
 
-
   String BatteryMonitor::getNextLogFileName() {
   uint16_t fileNumber = 0;
   String fileName;
@@ -137,7 +133,6 @@ void BatteryMonitor::send_battery_status(float voltage1, float voltage2, float v
 }
 
 
-
 void BatteryMonitor::setup() {
   Serial2.begin(57600);
   Serial.begin(9600);
@@ -191,7 +186,7 @@ void BatteryMonitor::setup() {
   }
 
   //Initialize display 
-  myDisplay.init();
+  //myDisplay.init();
   
 }
 
@@ -217,7 +212,7 @@ void BatteryMonitor::loop() {
   Serial.println("V");
 */
   //Display print of voltage values
-  myDisplay.Output(cell1Voltage, cell2Voltage, cell3Voltage, totalVoltage);
+  //myDisplay.Output(cell1Voltage, cell2Voltage, cell3Voltage, totalVoltage);
 
   //Serial print of current
   Current current;
