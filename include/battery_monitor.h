@@ -1,4 +1,4 @@
-#ifndef BATTERY_MONITOR_H //verhindert Mehrfacheinbindung
+#ifndef BATTERY_MONITOR_H 
 #define BATTERY_MONITOR_H
 
 #include <ADC.h>
@@ -9,23 +9,6 @@
 #include "SD.h"
 #include <HardwareSerial.h>
 
-
-/*
-extern const int cell1Pin;
-extern const int cell2Pin;
-extern const int cell3Pin;
-
-extern const float cell1Divider;
-extern const float cell2Divider;
-extern const float cell3Divider;
-
-extern const float cell1Calibration;
-extern const float cell2Calibration;
-extern const float cell3Calibration;
-
-*/
-
-// BATTERY_MONITOR_H
 class BatteryMonitor {
 public:
   void setup();

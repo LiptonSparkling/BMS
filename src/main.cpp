@@ -1,4 +1,3 @@
-//#include <Arduino.h>
 #include "battery_monitor.h"
 
 BatteryMonitor batteryMonitor;

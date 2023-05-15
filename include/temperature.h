@@ -2,12 +2,14 @@
 #define TEMPERATURE_H
 #include <Adafruit_MAX31865.h>
 
+// Vierten Sensor integrieren
+
 //Defintion of the Pins
 #define MAX31865_MOSI 26
-#define MAX31865_MISO 39
 #define MAX31865_CLK  27
+#define MAX31865_MISO 39
 
-//Defintion of the Chipselect Pins
+//Defintion of the Chipselect Pins 
 #define MAX31865_CS_1   21
 #define MAX31865_CS_2   22
 #define MAX31865_CS_3   23
