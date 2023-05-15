@@ -1,23 +1,19 @@
 #include "battery_monitor.h"
-#include "RFIDReader.h"
-//#include "display.h"
 #include "current.h"
 #include "temperature.h"
-
-// Define pins for Mavlink 
-#define RST_PIN 9
-#define SS_PIN  10
-
+#include "RFIDReader.h"
+#include "display.h"
+#include "MavlinkMessages.h"
 
 //Objects
-//extern Display myDisplay; 
-extern Current current;
 Temperature temp(MAX31865_CS_1, MAX31865_CS_2, MAX31865_CS_3, MAX31865_MOSI, MAX31865_MISO, MAX31865_CLK, RTD_REF_RESISTANCE);
 RFIDReader rfidReader(SS_PIN, RST_PIN);
+CURRENT ampere(AMPERE_PIN);
+MavlinkMessages mavlinkHandler; // Create an instance of the MavlinkHandler class
 
-const int chipSelect = BUILTIN_SDCARD;
+extern Display myDisplay; 
 
-// Define Batterytype -> Choose
+// Define Batterytype -> Choose for MAVLink
 int Batterytype = 1; 
 //0 = Type unknown
 //1 = LiPo
@@ -60,19 +56,14 @@ int cell1Index = 0;
 int cell2Index = 0;
 int cell3Index = 0;
 
-/*
-// Currentsensor
-const int currentSensorPin = A5;
-const float ACS712_OFFSET = 2.62; //set to offset from manifacturer
-float readCurrent(int pin, float sensitivity);
-*/
-
 // LED activation and logging
+const int chipSelect = BUILTIN_SDCARD;
 bool loggingActive = false;
 bool sdCardConnected = true;
 const int ledPin = 13;
 char logFileNameChar[20];
 const float voltageThreshold = 2.0; //Logging Threshold
+
 
 ADC *adc = new ADC();
 File logFile;
@@ -94,6 +85,8 @@ File logFile;
 
   return fileName;
 }
+
+/*
 
 void BatteryMonitor::send_battery_status(float voltage1, float voltage2, float voltage3) {
  
@@ -121,6 +114,8 @@ void BatteryMonitor::send_battery_status(float voltage1, float voltage2, float v
     chargeState = map(cellVoltageAverage, cellVoltageMin, 3.7, percentageMin, 20);
   }
 
+*/
+/*
   // Constrain the chargeState between 0 and 100
   chargeState = constrain(chargeState, 0, 100);
 
@@ -130,7 +125,9 @@ void BatteryMonitor::send_battery_status(float voltage1, float voltage2, float v
   mavlink_msg_battery_status_pack(1, 200, &msg, 0, 0, Batterytype, INT16_MIN, voltages, -1, -1, -1, -1, -1, chargeState);
   uint16_t len = mavlink_msg_to_send_buffer(buf, &msg);
   Serial2.write(buf, len); //send over serial 2 
+  
 }
+*/
 
 
 void BatteryMonitor::setup() {
@@ -139,16 +136,13 @@ void BatteryMonitor::setup() {
   rfidReader.begin();
 
   // Cellpins  
-  pinMode(cell1Pin, INPUT);
+  pinMode(cell1Pin, INPUT); 
   pinMode(cell2Pin, INPUT);
   pinMode(cell3Pin, INPUT);
+  pinMode(ledPin, OUTPUT); //LED onboard on Teensy for logging
 
    // Initialize temp sensors
   temp.begin();
-
-  
-  //LED on Teensy for logging
-  pinMode(ledPin, OUTPUT); //LED pin as output
 
   // ADC configuration
   adc->adc0->setAveraging(4); // Mittelung auf 4 Messungen einstellen
@@ -171,9 +165,7 @@ void BatteryMonitor::setup() {
   String logFileName = getNextLogFileName();
   Serial.print("Log file name: ");
   Serial.println(logFileName);
-
   logFileName.toCharArray(logFileNameChar, sizeof(logFileNameChar));
-
 
   // Create or open the log file
   logFile = SD.open(logFileNameChar, FILE_WRITE);
@@ -181,12 +173,12 @@ void BatteryMonitor::setup() {
     Serial.println("Error opening log file");
   } else {
   // Write the header of the log file
-    logFile.print("Timestamp (s),Cell 1 (V),Cell 2 (V),Cell 3 (V),Total Voltage (V),Temp Sensor 1 (°C),Temp Sensor 2 (°C),Temp Sensor 3 (°C)");
+    logFile.print("Timestamp (s),Cell 1 (V),Cell 2 (V),Cell 3 (V),Total Voltage (V),Current (A), Temp Sensor 1 (°C),Temp Sensor 2 (°C),Temp Sensor 3 (°C)");
     logFile.close(); // Close the log file after writing the header
   }
 
   //Initialize display 
-  //myDisplay.init();
+  myDisplay.init();
   
 }
 
@@ -199,28 +191,16 @@ void BatteryMonitor::loop() {
   float cell3Voltage = (adc->adc0->analogRead(cell3Pin) * Vref / 4095.0) * cell3Divider * cell3Calibration - cell1Voltage - cell2Voltage;
   float totalVoltage = cell1Voltage + cell2Voltage + cell3Voltage; // Total voltage calculation and output message
 
-/*
- //Serial print of voltages
-  Serial.print("Cell 1: ");
-  Serial.print(cell1Voltage, 3);
-  Serial.print("V, Cell 2: ");
-  Serial.print(cell2Voltage, 3);
-  Serial.print("V, Cell 3: ");
-  Serial.print(cell3Voltage, 3);
-  Serial.print(" Total Voltage: ");
-  Serial.print(totalVoltage, 2);
-  Serial.println("V");
-*/
-  //Display print of voltage values
-  //myDisplay.Output(cell1Voltage, cell2Voltage, cell3Voltage, totalVoltage);
 
   //Serial print of current
-  Current current;
-  current.currentmess();
+  float current = ampere.read();
+  Serial.print("Strom: ");
+  Serial.print(current);
+  Serial.println(" A");
   
   //variables for temp 1,2,3
   float temperature_1, temperature_2, temperature_3;
-  
+
   // Read temperature from sensor 1
   temperature_1 = temp.getTemperature(1, RTD_NOMINAL_1);
   if (temperature_1 == -9999.0) {
@@ -276,8 +256,6 @@ void BatteryMonitor::loop() {
   cell2Voltage = cell2Filtered;
   cell3Voltage = cell3Filtered;
 
-  
-
   // Write data to the log file
   if (cell1Voltage > voltageThreshold || cell2Voltage > voltageThreshold || cell3Voltage > voltageThreshold) {
     loggingActive = true;
@@ -296,6 +274,8 @@ void BatteryMonitor::loop() {
       logFile.print(cell3Voltage, 3);
       logFile.print(",");
       logFile.print(totalVoltage, 2);
+      logFile.print(",");
+      logFile.print(current, 2);
       logFile.print(",");
       logFile.print(temperature_1, 2);
       logFile.print(",");
@@ -317,10 +297,19 @@ void BatteryMonitor::loop() {
   }
 
 
+ // Mavlink message send cell voltages
+  mavlinkHandler.send_battery_status(cell1Voltage, cell2Voltage, cell3Voltage); // Call the send_battery_status method
+
+  //Display print of voltage values
+  myDisplay.Output(totalVoltage, current, temperature_1);
+
+
   // Mavlink message send cell voltages
-  send_battery_status(cell1Voltage, cell2Voltage, cell3Voltage);
+  //send_battery_status(cell1Voltage, cell2Voltage, cell3Voltage);
 
+  //Display print of voltage values
+  //myDisplay.Output(totalVoltage, current, temperature_1);
 
-  delay(1000); // Wait for 1 second
+  //delay(1000); // Wait for 1 second
 
 }

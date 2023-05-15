@@ -10,12 +10,15 @@ Temperature::Temperature(uint8_t cs1, uint8_t cs2, uint8_t cs3, uint8_t mosi, ui
 {
 }
 
+//initialize communication with  MAX31865
 void Temperature::begin() {
-  _max31865_1.begin(MAX31865_2WIRE); //All are 2 wire connection -> Adjust here if 3 wire
-  _max31865_2.begin(MAX31865_2WIRE); //All are 2 wire connection -> Adjust here if 3 wire
-  _max31865_3.begin(MAX31865_2WIRE); //All are 2 wire connection -> Adjust here if 3 wire
+  _max31865_1.begin(MAX31865_2WIRE); //All are 2 wire connection -> Adjust here if 3/4 wire
+  _max31865_2.begin(MAX31865_2WIRE); //All are 2 wire connection -> Adjust here if 3/4 wire
+  _max31865_3.begin(MAX31865_2WIRE); //All are 2 wire connection -> Adjust here if 3/4 wire
 }
 
+
+//calculating temp in method temperature in Adafruit lib
 float Temperature::getTemperature(uint8_t sensor_num, float rtd_nominal) {
   switch (sensor_num) {
     case 1:
@@ -32,3 +35,4 @@ float Temperature::getTemperature(uint8_t sensor_num, float rtd_nominal) {
       break;
   }
 }
+
