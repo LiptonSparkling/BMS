@@ -3,11 +3,11 @@
 
 #include <ADC.h>
 
-const int AMPERE_PIN = 41;
-const float DEFAULT_SENSITIVITY = 0.04;
-const float DEFAULT_CALIBRATION_FACTOR = 0.952;
-const float DEFAULT_OFFSET = 0.34;
-const int DEFAULT_MEASUREMENTS = 20;
+const int AMPERE_PIN = 41; //Datapin 
+const float DEFAULT_SENSITIVITY = 0.04;  //Datasheet
+const float DEFAULT_CALIBRATION_FACTOR = 0.916; //Gemessen bei 1A 
+const float DEFAULT_OFFSET = 0.34; //Offsetspannung bei 0A 
+const int DEFAULT_MEASUREMENTS = 20; //Summe der Messungen für Mittelwert
 
 
 class CURRENT {

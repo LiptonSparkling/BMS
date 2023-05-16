@@ -11,10 +11,7 @@ class Display {
   public:
     void init();
     void clear();
-   // void Output(float cell1Voltage, float cell2Voltage, float cell3Voltage, float totalVoltage, float ampere, float temperature_1);
-   void Output(float totalVoltage,  float current, float temperature_1);
-
-    
+    void Output(float totalVoltage,  float current, float temperature_1, float temperature_2);
 
   private:
     Adafruit_SSD1306 display;

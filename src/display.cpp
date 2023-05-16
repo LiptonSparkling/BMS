@@ -18,75 +18,36 @@ void Display::init() {
   display.setRotation(2);
   display.setTextColor(WHITE);
   display.setCursor(0, 0);
-  display.println("Initialized BMS");
+  display.println("BMS Starup");
   display.display();
   delay(1000);
   display.clearDisplay();
 }
 
-void Display::Output(float totalVoltage, float current, float temperature_1) {
+void Display::Output(float totalVoltage, float current, float temperature_1, float temperature_2) {
+  
   display.clearDisplay();
   display.setCursor(0,0);
-  display.print("Tot.Voltage:");
+  //Plot total Voltage
+  display.print("Tot.Voltage: ");
   display.print(totalVoltage);
-  display.println(" V");
-  display.print("Current:");
+  display.println(" V");  
+  //Plot current
+  display.print("Current: ");
   display.print(current);
-  display.println(" A");
-  display.print("Temp:");
+  display.println(" A");  
+  //Plot Temperature 1
+  display.print("Temp 1: ");
   display.print(temperature_1);
-  display.print(" C");
+  display.println(" C");  
+  //Plot Temperature 2
+  display.print("Temp 2: ");
+  display.print(temperature_2);
+  display.println(" C");  
+  
   display.display();
 
 }
-
-
-/*
-//Display Output of the values
-void Display::Output(float totalVoltage, float current, float temperature_1) {
-
-    display.clearDisplay(); 
-
-    display.setCursor(0, 0);
-    display.print("Total Voltage: ");
-    display.print(totalVoltage);
-    display.println(" V");
-
-    display.setCursor(0, 10);
-    display.print("Current: ");
-    display.print(current);
-    display.println(" A");
-
-    display.setCursor(0, 20);
-    display.print("Temperature: ");
-    display.print(temperature_1);
-    display.println(" °C");
-   */
-    /*
- //Display Cell 1
-    display.setCursor(0, 0);
-    display.print("Cell 1: ");
-    display.print(cell1Voltage);
-    display.println(" V");
-  //Display Cell 2
-    display.setCursor(0, 10);
-    display.print("Cell 2: ");
-    display.print(cell2Voltage);
-    display.println(" V");
-  //Display Cell 3
-    display.setCursor(0, 20);
-    display.print("Cell 3: ");
-    display.print(cell3Voltage);
-    display.println(" V");
-    display.setCursor(0, 30);
-    display.print("Total: ");
-    display.print(totalVoltage);
-    display.println(" V");
-  
-    display.display(); 
-
-}
-*/
 
 void Display::clear() {
   display.clearDisplay();

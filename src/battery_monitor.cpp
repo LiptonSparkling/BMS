@@ -6,7 +6,7 @@
 #include "MavlinkMessages.h"
 
 //Objects
-Temperature temp(MAX31865_CS_1, MAX31865_CS_2, MAX31865_CS_3, MAX31865_MOSI, MAX31865_MISO, MAX31865_CLK, RTD_REF_RESISTANCE);
+Temperature temp(MAX31865_CS_1, MAX31865_CS_2, MAX31865_CS_3, MAX31865_CS_4, MAX31865_MOSI, MAX31865_MISO, MAX31865_CLK, RTD_REF_RESISTANCE);
 RFIDReader rfidReader(SS_PIN, RST_PIN);
 CURRENT ampere(AMPERE_PIN);
 MavlinkMessages mavlinkHandler; // Create an instance of the MavlinkHandler class
@@ -199,7 +199,7 @@ void BatteryMonitor::loop() {
   Serial.println(" A");
   
   //variables for temp 1,2,3
-  float temperature_1, temperature_2, temperature_3;
+  float temperature_1, temperature_2, temperature_3,temperature_4;
 
   // Read temperature from sensor 1
   temperature_1 = temp.getTemperature(1, RTD_NOMINAL_1);
@@ -227,6 +227,15 @@ void BatteryMonitor::loop() {
     Serial.print("Temperature 3: ");
     Serial.println(temperature_3);
   }
+
+  // Read temperature from sensor 4
+  temperature_4 = temp.getTemperature(4, RTD_NOMINAL_4);
+  if (temperature_4 == -9999.0) {
+  Serial.println("Error reading temperature from sensor 4.");
+  } else {
+  Serial.print("Temperature 4: ");
+  Serial.println(temperature_4);
+}
 
 
   // Moving average filter for cell voltages
@@ -281,7 +290,9 @@ void BatteryMonitor::loop() {
       logFile.print(",");
       logFile.print(temperature_2, 2);
       logFile.print(",");
-      logFile.println(temperature_3, 2);
+      logFile.print(temperature_3, 2);
+      logFile.print(",");
+      logFile.println(temperature_4, 2);
       logFile.println();
       logFile.close();
     } else {
@@ -301,7 +312,7 @@ void BatteryMonitor::loop() {
   mavlinkHandler.send_battery_status(cell1Voltage, cell2Voltage, cell3Voltage); // Call the send_battery_status method
 
   //Display print of voltage values
-  myDisplay.Output(totalVoltage, current, temperature_1);
+  myDisplay.Output(totalVoltage, current, temperature_1, temperature_2);
 
 
   // Mavlink message send cell voltages
