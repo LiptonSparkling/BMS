@@ -3,11 +3,12 @@
 
 #include <ADC.h>
 
-const int AMPERE_PIN = 20;
+const int AMPERE_PIN = 41;
 const float DEFAULT_SENSITIVITY = 0.04;
 const float DEFAULT_CALIBRATION_FACTOR = 0.952;
-const float DEFAULT_OFFSET = 0.5;
+const float DEFAULT_OFFSET = 0.34;
 const int DEFAULT_MEASUREMENTS = 20;
+
 
 class CURRENT {
   private:

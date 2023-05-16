@@ -10,14 +10,14 @@
 #define MAX31865_MISO 39
 
 //Defintion of the Chipselect Pins 
-#define MAX31865_CS_1   21
-#define MAX31865_CS_2   22
+#define MAX31865_CS_1   22
+#define MAX31865_CS_2   21
 #define MAX31865_CS_3   23
 
 //Calibrate this resistors if temp is not correct
 #define RTD_NOMINAL_1   100
-#define RTD_NOMINAL_2   100
-#define RTD_NOMINAL_3   100
+#define RTD_NOMINAL_2   99.99
+#define RTD_NOMINAL_3   99.8
 
 //Ref resistance onboard
 #define RTD_REF_RESISTANCE 430.0

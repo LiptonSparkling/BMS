@@ -1,5 +1,7 @@
 #include "current.h"
 
+
+
 CURRENT::CURRENT(int pin, float sensitivity, float calibration_factor, float offset, int measurements) {
   adc = new ADC();
   this->pin = pin;
@@ -17,8 +19,8 @@ float CURRENT::read() {
   float sum = 0.0;
   for (int i = 0; i < measurements; i++) {
     int sensor_value = adc->analogRead(pin);
-    float voltage = (sensor_value / 4095.0) * 3.3 - offset;
-    float current = voltage / sensitivity * calibration_factor;
+    float voltage = (sensor_value / 4095.0f) * 3.3f - offset;
+    float current = (voltage / sensitivity * calibration_factor);
     sum += current;
     delay(5);
   }

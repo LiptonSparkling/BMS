@@ -36,8 +36,8 @@ const int cell3Pin = A2;
 
 // Calibration constants for cell voltages
 const float cell1Calibration = 1.007696007696008;
-const float cell2Calibration = 1.009200;
-const float cell3Calibration = 1.013010;
+const float cell2Calibration = 1.007050;
+const float cell3Calibration = 1.007310;
 
 // Voltage divider calculations
 const float Vref = 3.3;
