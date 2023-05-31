@@ -17,12 +17,14 @@ float CURRENT::read() {
     float sum = 0.0;
     for (int i = 0; i < measurements; i++) {
     int sensor_value = adc->analogRead(pin);
-    float voltage = ((sensor_value / 4095.0f) * 3.3f - offset);
-    float current = (voltage / sensitivity * calibration_factor);
+    float voltage  = ((sensor_value/ 4095.0f)*3.3f);
+    //float voltage = ((sensor_value / 4095.0f) * 3.3f - offset);
+    //float current = (voltage / sensitivity * calibration_factor);
+    float current = ((voltage-offset)*17.901);
 
     sum += current;
     delay(5);
   }
-   float average_current = (sum / measurements)*0.77; //Spannungsteiler 1/3
+   float average_current = (sum / measurements); 
    return average_current;
  }

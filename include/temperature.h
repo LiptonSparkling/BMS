@@ -17,10 +17,10 @@
 
 //Resistance Temperature Detector
 //Calibrate this resistors if temp is not correct
-#define RTD_NOMINAL_1   100 
-#define RTD_NOMINAL_2   100 
-#define RTD_NOMINAL_3   100   
-#define RTD_NOMINAL_4   100
+#define RTD_NOMINAL_1   100.164
+#define RTD_NOMINAL_2   100.11
+#define RTD_NOMINAL_3   100.12 
+#define RTD_NOMINAL_4   100.10
 
 //Ref resistance onboard
 #define RTD_REF_RESISTANCE 430.0

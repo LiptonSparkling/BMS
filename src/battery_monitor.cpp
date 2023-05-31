@@ -194,6 +194,15 @@ void BatteryMonitor::loop() {
 
   //Serial print of current
   float current = ampere.read();
+    // Apply current correction
+  if (current >= 24.0) {
+    current = current -0.68;
+  }
+  //else if (current >= 30.0) {
+ //   current = current * 0.94;
+ // }
+
+
   Serial.print("Strom: ");
   Serial.print(current);
   Serial.println(" A");
