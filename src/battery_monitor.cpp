@@ -86,48 +86,24 @@ File logFile;
   return fileName;
 }
 
-/*
 
-void BatteryMonitor::send_battery_status(float voltage1, float voltage2, float voltage3) {
- 
- //Serial print of Batterystatus
-  Serial.print("Sending Battery Status: Cell1 = ");
-  Serial.print(voltage1, 3);
-  Serial.print("V, Cell2 = ");
-  Serial.print(voltage2, 3);
-  Serial.print("V, Cell3 = ");
-  Serial.println(voltage3, 3);
-
-  float totalVoltage = voltage1 + voltage2 + voltage3;
-  
-  // Calculate charge_state
-  float cellVoltageAverage = totalVoltage / 3.0;
-  float chargeState;
-  float cellVoltageMax = 4.2;
-  float cellVoltageMin = 3.0;
-  float percentageMax = 100.0;
-  float percentageMin = 0.0;
-
-  if (cellVoltageAverage >= 3.7) {
-    chargeState = map(cellVoltageAverage, 3.7, cellVoltageMax, 20, percentageMax);
-  } else {
-    chargeState = map(cellVoltageAverage, cellVoltageMin, 3.7, percentageMin, 20);
-  }
-
-*/
-/*
-  // Constrain the chargeState between 0 and 100
-  chargeState = constrain(chargeState, 0, 100);
-
-  mavlink_message_t msg;
-  uint8_t buf[MAVLINK_MAX_PACKET_LEN];
-  uint16_t voltages[10] = {voltage1 * 1000, voltage2 * 1000, voltage3 * 1000, 0, 0, 0, 0, 0, 0, 0}; //Mavlink needs voltage in mA
-  mavlink_msg_battery_status_pack(1, 200, &msg, 0, 0, Batterytype, INT16_MIN, voltages, -1, -1, -1, -1, -1, chargeState);
-  uint16_t len = mavlink_msg_to_send_buffer(buf, &msg);
-  Serial2.write(buf, len); //send over serial 2 
-  
+// Calculating Charge State -> Noch verbuggt
+float BatteryMonitor::calculate_Charge_state(float totalVoltage) {
+    float cellVoltageAverage = totalVoltage / 3.0;
+    float chargeState;
+    float cellVoltageMax = 4.2;
+    float cellVoltageMin = 3.0;
+    float percentageMax = 100.0;
+    float percentageMin = 0.0;
+    float remaining = 100.0 - chargeState;
+    // Constrain the chargeState between 0 and 100
+    chargeState = constrain(chargeState, 0, 100);
+    
+    return chargeState;
 }
-*/
+
+
+
 
 
 void BatteryMonitor::setup() {
@@ -191,6 +167,8 @@ void BatteryMonitor::loop() {
   float cell3Voltage = (adc->adc0->analogRead(cell3Pin) * Vref / 4095.0) * cell3Divider * cell3Calibration - cell1Voltage - cell2Voltage;
   float totalVoltage = cell1Voltage + cell2Voltage + cell3Voltage; // Total voltage calculation and output message
 
+  // Calculating Charge State
+  float chargeState = calculate_Charge_state(totalVoltage);
 
   //Serial print of current
   float current = ampere.read();
@@ -318,17 +296,11 @@ void BatteryMonitor::loop() {
 
 
  // Mavlink message send cell voltages
-  mavlinkHandler.send_battery_status(cell1Voltage, cell2Voltage, cell3Voltage); // Call the send_battery_status method
+  mavlinkHandler.send_battery_status(cell1Voltage, cell2Voltage, cell3Voltage, chargeState); 
 
   //Display print of voltage values
   myDisplay.Output(totalVoltage, current, temperature_1, temperature_2);
 
-
-  // Mavlink message send cell voltages
-  //send_battery_status(cell1Voltage, cell2Voltage, cell3Voltage);
-
-  //Display print of voltage values
-  //myDisplay.Output(totalVoltage, current, temperature_1);
 
   //delay(1000); // Wait for 1 second
 
