@@ -2,6 +2,7 @@
 #define TEMPERATURE_H
 #include <Adafruit_MAX31865.h>
 
+
 // Vierten Sensor integrieren
 
 //Defintion of the Pins
@@ -31,6 +32,7 @@ class Temperature {
     Temperature(uint8_t cs1, uint8_t cs2, uint8_t cs3, uint8_t cs4, uint8_t mosi, uint8_t miso, uint8_t clk, float ref_resistance);
     void begin();
     float getTemperature(uint8_t sensor_num, float rtd_nominal);
+    float getMaxTemperature();
     
   private:
     Adafruit_MAX31865 _max31865_1;
@@ -38,6 +40,10 @@ class Temperature {
     Adafruit_MAX31865 _max31865_3;
     Adafruit_MAX31865 _max31865_4;
     float _ref_resistance;
+    float _temperature1;
+    float _temperature2;
+    float _temperature3;
+    float _temperature4;
 };
 
 #endif

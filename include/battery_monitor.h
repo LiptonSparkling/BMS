@@ -13,6 +13,7 @@ class BatteryMonitor {
 public:
   void setup();
   void loop();
+  float calculate_Charge_state(float totalVoltage);
 
 private:
   void send_battery_status(float voltage1, float voltage2, float voltage3);

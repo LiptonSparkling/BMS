@@ -4,6 +4,7 @@
 #include "common/mavlink.h"
 #include "common/mavlink_msg_battery_status.h"
 #include <Arduino.h>
+#include "temperature.h"
 
 // Define pins for Mavlink
 #define RST_PIN 9
@@ -15,8 +16,8 @@ extern int Batterytype;
 
 class MavlinkMessages {
 public:
-    void send_battery_status(float voltage1, float voltage2, float voltage3);
-
+    void send_battery_status(float voltage1, float voltage2, float voltage3, float chargeState);
+  
 private:
 
 };

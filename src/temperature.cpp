@@ -6,7 +6,7 @@ Temperature::Temperature(uint8_t cs1, uint8_t cs2, uint8_t cs3, uint8_t cs4, uin
   _max31865_1(cs1, mosi, miso, clk), 
   _max31865_2(cs2, mosi, miso, clk), 
   _max31865_3(cs3, mosi, miso, clk),
-  _max31865_4(cs4, mosi, miso, clk),  // Initialisierung des neuen Sensors
+  _max31865_4(cs4, mosi, miso, clk),  
   _ref_resistance(ref_resistance)
 {
 }
@@ -41,3 +41,14 @@ float Temperature::getTemperature(uint8_t sensor_num, float rtd_nominal) {
   }
 }
 
+//Find out maxTemp for MavlinkMessage
+float Temperature::getMaxTemperature() {
+    float maxTemp = _temperature1;
+    if (_temperature2 > maxTemp) {
+        maxTemp = _temperature2;
+    }
+    if (_temperature3 > maxTemp) {
+        maxTemp = _temperature3;
+    }
+    return maxTemp;
+}

@@ -22,6 +22,7 @@ class CURRENT {
     CURRENT(int pin = AMPERE_PIN, float sensitivity = DEFAULT_SENSITIVITY, float calibration_factor = DEFAULT_CALIBRATION_FACTOR, float offset = DEFAULT_OFFSET, int measurements = DEFAULT_MEASUREMENTS);
     void setup();
     float read();
+    float getCurrent();
 };
 
 #endif

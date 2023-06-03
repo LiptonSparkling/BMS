@@ -1,15 +1,16 @@
 #ifndef HEALTH_STATUS_H
 #define HEALTH_STATUS_H
-
 #include "battery_monitor.h"
+#include "temperature.h"
 
 
-class batterychecker {
-  public:
+class BatteryChecker {
+public:
+    BatteryChecker();
+    void checkBatteryStatus();
 
-
-  private:
-
+private:
+    BatteryMonitor batteryMonitor;
 };
 
 #endif
