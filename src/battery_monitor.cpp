@@ -270,6 +270,8 @@ void BatteryMonitor::loop() {
   //Display print of voltage values
   myDisplay.Output(currentStateFiltered);
 
+  BatteryChecker::checkBatteryStatus(currentStateFiltered);
+
 
   //delay(1000); // Wait for 1 second
 
