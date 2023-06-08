@@ -13,7 +13,7 @@ class Logging {
     void logging();
 
   private:
-   
+
 };
 
 #endif

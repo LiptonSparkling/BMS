@@ -11,7 +11,7 @@ class Display {
   public:
     void init();
     void clear();
-    void Output(const BatteryState<3>& state);
+    void Output(const BatteryState& state);
 
   private:
     Adafruit_SSD1306 display;

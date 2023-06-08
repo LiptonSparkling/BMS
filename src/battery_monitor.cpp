@@ -11,10 +11,10 @@ RFIDReader rfidReader(SS_PIN, RST_PIN);
 CURRENT ampere(AMPERE_PIN);
 MavlinkMessages mavlinkHandler; // Create an instance of the MavlinkHandler class
 
-extern Display myDisplay; 
+extern Display myDisplay;
 
 // Define Batterytype -> Choose for MAVLink
-int Batterytype = 1; 
+int Batterytype = 1;
 //0 = Type unknown
 //1 = LiPo
 //2 = LiFe
@@ -96,7 +96,7 @@ float BatteryMonitor::calculate_Charge_state(float totalVoltage) {
     float remaining = 100.0 - chargeState;
     // Constrain the chargeState between 0 and 100
     chargeState = constrain(chargeState, 0, 100);
-    
+
     return chargeState;
 }
 
@@ -109,8 +109,8 @@ void BatteryMonitor::setup() {
   Serial.begin(9600);
   rfidReader.begin();
 
-  // Cellpins  
-  pinMode(cell1Pin, INPUT); 
+  // Cellpins
+  pinMode(cell1Pin, INPUT);
   pinMode(cell2Pin, INPUT);
   pinMode(cell3Pin, INPUT);
   pinMode(ledPin, OUTPUT); //LED onboard on Teensy for logging
@@ -151,9 +151,9 @@ void BatteryMonitor::setup() {
     logFile.close(); // Close the log file after writing the header
   }
 
-  //Initialize display 
+  //Initialize display
   myDisplay.init();
-  
+
 }
 
 
@@ -166,7 +166,7 @@ void BatteryMonitor::loop() {
   currentStateRaw.totalVoltage = currentStateRaw.voltages[0] + currentStateRaw.voltages[1] + currentStateRaw.voltages[2]; // Total voltage calculation and output message
 
   // Calculating Charge State
-  currentStateRaw.chargeState = calculate_Charge_state(totalVoltage);
+  currentStateRaw.chargeState = calculate_Charge_state(currentStateRaw.totalVoltage);
 
   //Serial print of current
   currentStateRaw.current = ampere.read();
@@ -191,7 +191,7 @@ void BatteryMonitor::loop() {
     Serial.print("Temperature 1: ");
     Serial.println(currentStateRaw.temperatures[0]);
   }
-  
+
   // Read temperature from sensor 2
   currentStateRaw.temperatures[1] = temp.getTemperature(2, RTD_NOMINAL_2);
   if (currentStateRaw.temperatures[1] == -9999.0) {
@@ -200,7 +200,7 @@ void BatteryMonitor::loop() {
     Serial.print("Temperature 2: ");
     Serial.println(currentStateRaw.temperatures[1]);
   }
-  
+
   // Read temperature from sensor 3
   currentStateRaw.temperatures[2] = temp.getTemperature(3, RTD_NOMINAL_3);
   if (currentStateRaw.temperatures[2] == -9999.0) {
@@ -265,22 +265,22 @@ void BatteryMonitor::loop() {
 
 
  // Mavlink message send cell voltages
-  mavlinkHandler.send_battery_status(currentStateFiltered); 
+  mavlinkHandler.send_battery_status(currentStateFiltered);
 
   //Display print of voltage values
   myDisplay.Output(currentStateFiltered);
 
-  BatteryChecker::checkBatteryStatus(currentStateFiltered);
+  checker.checkBatteryStatus(currentStateFiltered);
 
 
   //delay(1000); // Wait for 1 second
 
 }
 
-BatteryState<3> filter(const BatteryState<3>& raw)
+BatteryState filter(const BatteryState& raw)
 {
   // Initialize filtered state
-  BatteryState<3> filtered = raw;
+  BatteryState filtered = raw;
 
   // Moving average filter for cell voltages
   voltages0[cellIndex] = raw.voltages[0];
@@ -292,9 +292,9 @@ BatteryState<3> filter(const BatteryState<3>& raw)
   filtered.voltages[2] = 0;
 
   for (int i = 0; i < filterSize; i++) {
-    filtered.voltages[0] += voltages[0]s[i];
-    filtered.voltages[1] += voltages[1]s[i];
-    filtered.voltages[2] += voltages[2]s[i];
+    filtered.voltages[0] += voltages0[i];
+    filtered.voltages[1] += voltages1[i];
+    filtered.voltages[2] += voltages2[i];
   }
 
   filtered.voltages[0] /= filterSize;

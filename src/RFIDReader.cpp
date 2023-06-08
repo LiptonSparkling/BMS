@@ -76,7 +76,7 @@ void RFIDReader::displayinformation()
 }
 
 
-  
+
   readCard
     if (rfidReader.readCard()) {
     Serial.print("Serial Number: ");

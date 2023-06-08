@@ -4,7 +4,7 @@ Logging loggfile;
 
 
  void Logging::loggingsetup() {
- 
+
     // LED activation and logging
     pinMode(ledPin, OUTPUT); //LED pin as output
 

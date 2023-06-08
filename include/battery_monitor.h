@@ -1,4 +1,4 @@
-#ifndef BATTERY_MONITOR_H 
+#ifndef BATTERY_MONITOR_H
 #define BATTERY_MONITOR_H
 
 #include <ADC.h>
@@ -8,15 +8,18 @@
 #include "common/mavlink_msg_battery_status.h"
 #include "SD.h"
 #include <HardwareSerial.h>
+#include "health_status.h"
 
+/*
 template <unsigned int Cells>
+*/
 struct BatteryState {
-  float voltages[Cells];
+  float voltages[3];
   float totalVoltage;
   float chargeState;
   float current;
-  float temperatures[Cells + 1];
-}
+  float temperatures[3 + 1];
+};
 
 class BatteryMonitor {
 public:
@@ -26,9 +29,10 @@ public:
 
 private:
   String getNextLogFileName();
-  BatteryState<3> filter(const BatteryState<3>& state);
-  BatteryState<3> currentStateRaw;
-  BatteryState<3> currentStateFiltered;
+  BatteryState filter(const BatteryState& state);
+  BatteryState currentStateRaw;
+  BatteryState currentStateFiltered;
+  BatteryChecker checker;
 };
 
-#endif 
+#endif

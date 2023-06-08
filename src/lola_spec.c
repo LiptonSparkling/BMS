@@ -15,16 +15,6 @@
 // - output.TODO.c
 // ------------------------------------------
 
-#include <assert.h>
-#include <limits.h>
-#include <math.h>
-#include <pthread.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-
 // ########################
 // #       STREAMS        #
 // ########################
@@ -150,7 +140,7 @@ typedef struct {
 } Memory;
 
 // Accesses the value of the stream voltage_1 with an offset. If the value
-// exists a reference to it is given, otherwise None or NULL is returned.
+// exists a reference to it is given, otherwise None or 0 is returned.
 float *memory_voltage_1(Memory *memory, unsigned int offset) {
   Voltage_1Buffer *buffer = &memory->voltage_1;
   int index = (int)buffer->current;
@@ -160,7 +150,7 @@ float *memory_voltage_1(Memory *memory, unsigned int offset) {
   if(buffer->valid[index]) {
     return buffer->values + index;
   } else {
-    return NULL;
+    return 0;
   }
 }
 // Updates the stream voltage_1 with a new value.
@@ -171,7 +161,7 @@ void memory_update_voltage_1(Memory *memory, float new_value) {
 }
 
 // Accesses the value of the stream voltage_2 with an offset. If the value
-// exists a reference to it is given, otherwise None or NULL is returned.
+// exists a reference to it is given, otherwise None or 0 is returned.
 float *memory_voltage_2(Memory *memory, unsigned int offset) {
   Voltage_2Buffer *buffer = &memory->voltage_2;
   int index = (int)buffer->current;
@@ -181,7 +171,7 @@ float *memory_voltage_2(Memory *memory, unsigned int offset) {
   if(buffer->valid[index]) {
     return buffer->values + index;
   } else {
-    return NULL;
+    return 0;
   }
 }
 // Updates the stream voltage_2 with a new value.
@@ -192,7 +182,7 @@ void memory_update_voltage_2(Memory *memory, float new_value) {
 }
 
 // Accesses the value of the stream voltage_3 with an offset. If the value
-// exists a reference to it is given, otherwise None or NULL is returned.
+// exists a reference to it is given, otherwise None or 0 is returned.
 float *memory_voltage_3(Memory *memory, unsigned int offset) {
   Voltage_3Buffer *buffer = &memory->voltage_3;
   int index = (int)buffer->current;
@@ -202,7 +192,7 @@ float *memory_voltage_3(Memory *memory, unsigned int offset) {
   if(buffer->valid[index]) {
     return buffer->values + index;
   } else {
-    return NULL;
+    return 0;
   }
 }
 
@@ -214,7 +204,7 @@ void memory_update_voltage_3(Memory *memory, float new_value) {
 }
 
 // Accesses the value of the stream similar_1_2 with an offset. If the value
-// exists a reference to it is given, otherwise None or NULL is returned.
+// exists a reference to it is given, otherwise None or 0 is returned.
 int *memory_similar_1_2(Memory *memory, unsigned int offset) {
   Similar_1_2Buffer *buffer = &memory->similar_1_2;
   int index = (int)buffer->current;
@@ -224,7 +214,7 @@ int *memory_similar_1_2(Memory *memory, unsigned int offset) {
   if(buffer->valid[index]) {
     return buffer->values + index;
   } else {
-    return NULL;
+    return 0;
   }
 }
 
@@ -236,7 +226,7 @@ void memory_update_similar_1_2(Memory *memory, int new_value) {
 }
 
 // Accesses the value of the stream similar_2_3 with an offset. If the value
-// exists a reference to it is given, otherwise None or NULL is returned.
+// exists a reference to it is given, otherwise None or 0 is returned.
 int *memory_similar_2_3(Memory *memory, unsigned int offset) {
   Similar_2_3Buffer *buffer = &memory->similar_2_3;
   int index = (int)buffer->current;
@@ -246,7 +236,7 @@ int *memory_similar_2_3(Memory *memory, unsigned int offset) {
   if(buffer->valid[index]) {
     return buffer->values + index;
   } else {
-    return NULL;
+    return 0;
   }
 }
 
@@ -258,7 +248,7 @@ void memory_update_similar_2_3(Memory *memory, int new_value) {
 }
 
 // Accesses the value of the stream similar_3_1 with an offset. If the value
-// exists a reference to it is given, otherwise None or NULL is returned.
+// exists a reference to it is given, otherwise None or 0 is returned.
 int *memory_similar_3_1(Memory *memory, unsigned int offset) {
   Similar_3_1Buffer *buffer = &memory->similar_3_1;
   int index = (int)buffer->current;
@@ -268,7 +258,7 @@ int *memory_similar_3_1(Memory *memory, unsigned int offset) {
   if(buffer->valid[index]) {
     return buffer->values + index;
   } else {
-    return NULL;
+    return 0;
   }
 
 }
@@ -280,7 +270,7 @@ void memory_update_similar_3_1(Memory *memory, int new_value) {
 }
 
 // Accesses the value of the stream trigger_0 with an offset. If the value
-// exists a reference to it is given, otherwise None or NULL is returned.
+// exists a reference to it is given, otherwise None or 0 is returned.
 int *memory_trigger_0(Memory *memory, unsigned int offset) {
   Trigger_0Buffer *buffer = &memory->trigger_0;
   int index = (int)buffer->current;
@@ -290,7 +280,7 @@ int *memory_trigger_0(Memory *memory, unsigned int offset) {
   if(buffer->valid[index]) {
     return buffer->values + index;
   } else {
-    return NULL;
+    return 0;
   }
 }
 
@@ -325,7 +315,7 @@ void eval_voltage_1(Memory *memory, float new_value) {
 // RtLola expression: voltage_1
 float voltage_1(Memory *memory) {
   float *value = memory_voltage_1(memory, 0);
-  assert(value != NULL);
+
   return *value;
 }
 
@@ -343,7 +333,7 @@ void eval_voltage_2(Memory *memory, float new_value) {
 // RtLola expression: voltage_2
 float voltage_2(Memory *memory) {
   float *value = memory_voltage_2(memory, 0);
-  assert(value != NULL);
+
   return *value;
 }
 
@@ -361,7 +351,7 @@ void eval_voltage_3(Memory *memory, float new_value) {
 // RtLola expression: voltage_3
 float voltage_3(Memory *memory) {
   float *value = memory_voltage_3(memory, 0);
-  assert(value != NULL);
+
   return *value;
 }
 
@@ -372,7 +362,7 @@ float voltage_3(Memory *memory) {
 // RtLola expression: similar_1_2
 int similar_1_2(Memory *memory) {
   int *value = memory_similar_1_2(memory, 0);
-  assert(value != NULL);
+
   return *value;
 }
 
@@ -423,7 +413,7 @@ void eval_similar_1_2(Memory *memory) {
 // RtLola expression: similar_2_3
 int similar_2_3(Memory *memory) {
   int *value = memory_similar_2_3(memory, 0);
-  assert(value != NULL);
+
   return *value;
 }
 
@@ -474,7 +464,7 @@ void eval_similar_2_3(Memory *memory) {
 // RtLola expression: similar_3_1
 int similar_3_1(Memory *memory) {
   int *value = memory_similar_3_1(memory, 0);
-  assert(value != NULL);
+
   return *value;
 }
 
@@ -526,7 +516,7 @@ void eval_similar_3_1(Memory *memory) {
 // RtLola expression: trigger_0
 int trigger_0(Memory *memory) {
   int *value = memory_trigger_0(memory, 0);
-  assert(value != NULL);
+
   return *value;
 }
 
@@ -555,9 +545,6 @@ void eval_trigger_0(Memory *memory) {
 // RtLola Definition: trigger trigger_0 "Error: Voltage deviation"
 int check_trigger0(Memory *memory) {
   if(*memory_trigger_0(memory, 0)) {
-    fprintf(stderr,
-            "\x1b[31m[%f][Trigger][#0] Error: Voltage deviation\x1b[0m\n",
-            memory->time);
     return 1;
   }
   return 0;

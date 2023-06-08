@@ -1,18 +1,18 @@
 #ifndef HEALTH_STATUS_H
 #define HEALTH_STATUS_H
-#include "battery_monitor.h"
 
-#define fprintf(x) // Disable fprintf in LOLA code
+struct BatteryState;
+
+#include <Arduino.h>
 namespace LOLA_SPEC {
-    #include lola_spec.c
+    #include "lola_spec.c"
 }
-#undef fprintf
 
 class BatteryChecker
 {
     public:
     BatteryChecker();
-    void checkBatteryStatus(const BatteryState<3>& state);
+    void checkBatteryStatus(const BatteryState& state);
 
     private:
     LOLA_SPEC::Memory memory;
