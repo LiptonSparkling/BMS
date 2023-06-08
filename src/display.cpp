@@ -24,25 +24,25 @@ void Display::init() {
   display.clearDisplay();
 }
 
-void Display::Output(float totalVoltage, float current, float temperature_1, float temperature_2) {
+void Display::Output(const BatteryState<3>& state) {
   
   display.clearDisplay();
   display.setCursor(0,0);
   //Plot total Voltage
   display.print("Tot.Voltage: ");
-  display.print(totalVoltage);
+  display.print(state.totalVoltage);
   display.println(" V");  
   //Plot current
   display.print("Current: ");
-  display.print(current);
+  display.print(state.current);
   display.println(" A");  
   //Plot Temperature 1
   display.print("Temp 1: ");
-  display.print(temperature_1);
+  display.print(state.temperature_1);
   display.println(" C");  
   //Plot Temperature 2
   display.print("Temp 2: ");
-  display.print(temperature_2);
+  display.print(state.temperature_2);
   display.println(" C");  
   
   display.display();

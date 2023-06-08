@@ -9,6 +9,15 @@
 #include "SD.h"
 #include <HardwareSerial.h>
 
+template <unsigned int Cells>
+struct BatteryState {
+  float voltages[Cells];
+  float totalVoltage;
+  float chargeState;
+  float current;
+  float temperatures[Cells + 1];
+}
+
 class BatteryMonitor {
 public:
   void setup();
@@ -16,8 +25,10 @@ public:
   float calculate_Charge_state(float totalVoltage);
 
 private:
-  void send_battery_status(float voltage1, float voltage2, float voltage3);
   String getNextLogFileName();
+  BatteryState<3> filter(const BatteryState<3>& state);
+  BatteryState<3> currentStateRaw;
+  BatteryState<3> currentStateFiltered;
 };
 
 #endif 

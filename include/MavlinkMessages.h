@@ -16,7 +16,7 @@ extern int Batterytype;
 
 class MavlinkMessages {
 public:
-    void send_battery_status(float voltage1, float voltage2, float voltage3, float chargeState);
+    void send_battery_status(const BatteryState<3>& state);
   
 private:
 
