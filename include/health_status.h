@@ -4,8 +4,9 @@
 struct BatteryState;
 
 #include <Arduino.h>
-namespace LOLA_SPEC {
-    #include "lola_spec.c"
+
+extern "C" {
+    #include "lola_spec.h"
 }
 
 class BatteryChecker
@@ -15,7 +16,7 @@ class BatteryChecker
     void checkBatteryStatus(const BatteryState& state);
 
     private:
-    LOLA_SPEC::Memory memory;
+    Memory memory;
 };
 
 #endif

@@ -277,7 +277,7 @@ void BatteryMonitor::loop() {
 
 }
 
-BatteryState filter(const BatteryState& raw)
+BatteryState BatteryMonitor::filter(const BatteryState& raw)
 {
   // Initialize filtered state
   BatteryState filtered = raw;
