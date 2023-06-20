@@ -1,5 +1,8 @@
 #include "health_status.h"
 #include "battery_monitor.h"
+#include "common/mavlink.h"
+#include "common/mavlink_msg_high_latency2.h"
+
 
 BatteryChecker::BatteryChecker()
 {
@@ -13,7 +16,12 @@ void BatteryChecker::checkBatteryStatus(const BatteryState& state)
     switch(lola_monitor(&memory, e, 1.0)) {
         case 1:
             // Error: Voltage deviation
-            // ... Error message ausgeben oder so
+            Serial.println("Cellvoltage drift!");
+            Serial.println("Error triggered by RTLola");
+
+            //MAV_BATTERY_FAULT 
+            //MAV_BATTERY_FAULT_CELL_FAIL -> One or more cells have failed. Battery should also report MAV_BATTERY_CHARGE_STATE_FAILE (and should not be used).
+
             break;
         case 0:
         default:

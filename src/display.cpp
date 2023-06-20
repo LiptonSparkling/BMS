@@ -53,3 +53,21 @@ void Display::clear() {
   display.clearDisplay();
   display.display();
 }
+
+// Show RFID Read
+void Display::showRFIDData(const RFIDReader::RFIDData& data) {
+  display.clearDisplay();
+  display.setCursor(0, 0);
+
+  display.print("SN Nr.: ");
+  display.println(data.serialNumber);
+  display.println("Type: LiPo");
+  display.print("Cap: ");
+  display.print(data.capacity);
+  display.println(" mAh");
+  display.print("Num Cells: ");
+  display.println(data.numCells);
+  display.display();
+
+  delay(5000);
+}

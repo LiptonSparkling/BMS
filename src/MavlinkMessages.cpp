@@ -5,7 +5,6 @@
 Temperature temperatureSensor(MAX31865_CS_1, MAX31865_CS_2, MAX31865_CS_3, MAX31865_CS_4, MAX31865_MOSI, MAX31865_MISO, MAX31865_CLK, RTD_REF_RESISTANCE);
 CURRENT amperevalue;
 
-
 void MavlinkMessages::send_battery_status(const BatteryState& state) {
     //Serial print of Batterystatus
     Serial.print("Sending Battery Status: Cell1 = ");

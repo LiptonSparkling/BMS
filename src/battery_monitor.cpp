@@ -5,12 +5,12 @@
 #include "display.h"
 #include "MavlinkMessages.h"
 
+
 //Objects
 Temperature temp(MAX31865_CS_1, MAX31865_CS_2, MAX31865_CS_3, MAX31865_CS_4, MAX31865_MOSI, MAX31865_MISO, MAX31865_CLK, RTD_REF_RESISTANCE);
-RFIDReader rfidReader(SS_PIN, RST_PIN);
 CURRENT ampere(AMPERE_PIN);
 MavlinkMessages mavlinkHandler; // Create an instance of the MavlinkHandler class
-
+RFIDReader rfidReader;
 extern Display myDisplay;
 
 // Define Batterytype -> Choose for MAVLink
@@ -101,13 +101,15 @@ float BatteryMonitor::calculate_Charge_state(float totalVoltage) {
 }
 
 
-
-
-
 void BatteryMonitor::setup() {
   Serial2.begin(57600);
   Serial.begin(9600);
-  rfidReader.begin();
+
+
+  myDisplay.init();
+  rfidReader.initialize();
+  RFIDReader::RFIDData data = rfidReader.readCard();
+  myDisplay.showRFIDData(data);
 
   // Cellpins
   pinMode(cell1Pin, INPUT);
@@ -124,6 +126,7 @@ void BatteryMonitor::setup() {
   adc->adc0->setConversionSpeed(ADC_CONVERSION_SPEED::HIGH_SPEED);
   adc->adc0->setSamplingSpeed(ADC_SAMPLING_SPEED::HIGH_SPEED);
   adc->adc0->setReference(ADC_REFERENCE::REF_3V3); // Referenzspannung auf 3,3V einstellen
+
 
   ///Logging
   // SD card initialization
@@ -152,7 +155,7 @@ void BatteryMonitor::setup() {
   }
 
   //Initialize display
-  myDisplay.init();
+  //myDisplay.init();
 
 }
 
@@ -271,9 +274,6 @@ void BatteryMonitor::loop() {
   myDisplay.Output(currentStateFiltered);
 
   checker.checkBatteryStatus(currentStateFiltered);
-
-
-  //delay(1000); // Wait for 1 second
 
 }
 
