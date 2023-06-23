@@ -1,6 +1,7 @@
 #include "MavlinkMessages.h"
 #include <Arduino.h>
 #include "battery_monitor.h"
+#include "common/mavlink.h"
 
 Temperature temperatureSensor(MAX31865_CS_1, MAX31865_CS_2, MAX31865_CS_3, MAX31865_CS_4, MAX31865_MOSI, MAX31865_MISO, MAX31865_CLK, RTD_REF_RESISTANCE);
 CURRENT amperevalue;
@@ -27,6 +28,27 @@ void MavlinkMessages::send_battery_status(const BatteryState& state) {
 
     uint16_t len = mavlink_msg_to_send_buffer(buf, &msg);
 
-    // Send MavLink Message over serial 2!
+    
     Serial2.write(buf, len);
 }
+
+
+void MavlinkMessages::send_status_text(uint8_t severity, const char* text) {
+    mavlink_message_t msg;
+    mavlink_statustext_t status_text_msg;
+
+    status_text_msg.severity = severity;
+    strncpy(status_text_msg.text, text, sizeof(status_text_msg.text) - 1);
+    status_text_msg.text[sizeof(status_text_msg.text) - 1] = '\0';  // Ensure null-termination of the text
+
+    mavlink_msg_statustext_encode(1, 200, &msg, &status_text_msg);
+
+    uint8_t buf[MAVLINK_MAX_PACKET_LEN];
+    uint16_t len = mavlink_msg_to_send_buffer(buf, &msg);
+
+   // Send MavLink Message over serial 2!
+    Serial2.write(buf, len);
+}
+
+
+

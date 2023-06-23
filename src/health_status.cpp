@@ -1,7 +1,5 @@
 #include "health_status.h"
-#include "battery_monitor.h"
-#include "common/mavlink.h"
-#include "common/mavlink_msg_high_latency2.h"
+#include "MavlinkMessages.h"
 
 
 BatteryChecker::BatteryChecker()
@@ -18,14 +16,18 @@ void BatteryChecker::checkBatteryStatus(const BatteryState& state)
             // Error: Voltage deviation
             Serial.println("Cellvoltage drift!");
             Serial.println("Error triggered by RTLola");
-
-            //MAV_BATTERY_FAULT 
-            //MAV_BATTERY_FAULT_CELL_FAIL -> One or more cells have failed. Battery should also report MAV_BATTERY_CHARGE_STATE_FAILE (and should not be used).
-
+            //Mavlink Error senden
+            send_status_text(MAV_SEVERITY_ERROR, "Cell Voltage Error!");
             break;
         case 0:
         default:
             // Alles in Ordnung
             ;
     }
+}
+
+
+void BatteryChecker::send_status_text(uint8_t severity, const char* text) {
+    MavlinkMessages mavlinkMessages;  // Create an instance of the MavlinkMessages class
+    mavlinkMessages.send_status_text(severity, text);  // Call the send_status_text function from MavlinkMessages
 }
