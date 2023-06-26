@@ -9,7 +9,6 @@
 //Objects
 Temperature temp(MAX31865_CS_1, MAX31865_CS_2, MAX31865_CS_3, MAX31865_CS_4, MAX31865_MOSI, MAX31865_MISO, MAX31865_CLK, RTD_REF_RESISTANCE);
 CURRENT ampere(AMPERE_PIN);
-MavlinkMessages mavlinkHandler; // Create an instance of the MavlinkHandler class
 RFIDReader rfidReader;
 extern Display myDisplay;
 
@@ -268,7 +267,7 @@ void BatteryMonitor::loop() {
 
 
  // Mavlink message send cell voltages
-  mavlinkHandler.send_battery_status(currentStateFiltered);
+  MavlinkMessages::send_battery_status(currentStateFiltered);
 
   //Display print of voltage values
   myDisplay.Output(currentStateFiltered);
