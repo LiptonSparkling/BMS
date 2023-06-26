@@ -10,7 +10,7 @@
 #define MAX31865_CLK  27
 #define MAX31865_MISO 39
 
-//Defintion of the Chipselect Pins 
+//Defintion of the Chipselect Pins
 #define MAX31865_CS_1   22
 #define MAX31865_CS_2   21
 #define MAX31865_CS_3   23
@@ -20,7 +20,7 @@
 //Calibrate this resistors if temp is not correct
 #define RTD_NOMINAL_1   100.164
 #define RTD_NOMINAL_2   100.11
-#define RTD_NOMINAL_3   100.12 
+#define RTD_NOMINAL_3   100.12
 #define RTD_NOMINAL_4   100.10
 
 //Ref resistance onboard
@@ -33,7 +33,7 @@ class Temperature {
     void begin();
     float getTemperature(uint8_t sensor_num, float rtd_nominal);
     float getMaxTemperature();
-    
+
   private:
     Adafruit_MAX31865 _max31865_1;
     Adafruit_MAX31865 _max31865_2;

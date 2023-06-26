@@ -5,16 +5,15 @@
 #include "display.h"
 #include "MavlinkMessages.h"
 
+
 //Objects
 Temperature temp(MAX31865_CS_1, MAX31865_CS_2, MAX31865_CS_3, MAX31865_CS_4, MAX31865_MOSI, MAX31865_MISO, MAX31865_CLK, RTD_REF_RESISTANCE);
-RFIDReader rfidReader(SS_PIN, RST_PIN);
 CURRENT ampere(AMPERE_PIN);
-MavlinkMessages mavlinkHandler; // Create an instance of the MavlinkHandler class
-
-extern Display myDisplay; 
+RFIDReader rfidReader;
+extern Display myDisplay;
 
 // Define Batterytype -> Choose for MAVLink
-int Batterytype = 1; 
+int Batterytype = 1;
 //0 = Type unknown
 //1 = LiPo
 //2 = LiFe
@@ -49,12 +48,10 @@ const float cell3Divider = (R5 + R6) / R5;
 const int filterSize = 1;
 
 // Arrays to store previous voltage readings and indices for the moving average filter
-float cell1Voltages[filterSize] = {0};
-float cell2Voltages[filterSize] = {0};
-float cell3Voltages[filterSize] = {0};
-int cell1Index = 0;
-int cell2Index = 0;
-int cell3Index = 0;
+float voltages0[filterSize] = {0};
+float voltages1[filterSize] = {0};
+float voltages2[filterSize] = {0};
+int cellIndex = 0;
 
 // LED activation and logging
 const int chipSelect = BUILTIN_SDCARD;
@@ -98,21 +95,23 @@ float BatteryMonitor::calculate_Charge_state(float totalVoltage) {
     float remaining = 100.0 - chargeState;
     // Constrain the chargeState between 0 and 100
     chargeState = constrain(chargeState, 0, 100);
-    
+
     return chargeState;
 }
-
-
-
 
 
 void BatteryMonitor::setup() {
   Serial2.begin(57600);
   Serial.begin(9600);
-  rfidReader.begin();
 
-  // Cellpins  
-  pinMode(cell1Pin, INPUT); 
+
+  myDisplay.init();
+  rfidReader.initialize();
+  RFIDReader::RFIDData data = rfidReader.readCard();
+  myDisplay.showRFIDData(data);
+
+  // Cellpins
+  pinMode(cell1Pin, INPUT);
   pinMode(cell2Pin, INPUT);
   pinMode(cell3Pin, INPUT);
   pinMode(ledPin, OUTPUT); //LED onboard on Teensy for logging
@@ -126,6 +125,7 @@ void BatteryMonitor::setup() {
   adc->adc0->setConversionSpeed(ADC_CONVERSION_SPEED::HIGH_SPEED);
   adc->adc0->setSamplingSpeed(ADC_SAMPLING_SPEED::HIGH_SPEED);
   adc->adc0->setReference(ADC_REFERENCE::REF_3V3); // Referenzspannung auf 3,3V einstellen
+
 
   ///Logging
   // SD card initialization
@@ -153,107 +153,78 @@ void BatteryMonitor::setup() {
     logFile.close(); // Close the log file after writing the header
   }
 
-  //Initialize display 
-  myDisplay.init();
-  
+  //Initialize display
+  //myDisplay.init();
+
 }
 
 
 void BatteryMonitor::loop() {
 
   //Reading voltages
-  float cell1Voltage = (adc->adc0->analogRead(cell1Pin) * Vref / 4095.0) * cell1Divider * cell1Calibration;
-  float cell2Voltage = (adc->adc0->analogRead(cell2Pin) * Vref / 4095.0) * cell2Divider * cell2Calibration - cell1Voltage;
-  float cell3Voltage = (adc->adc0->analogRead(cell3Pin) * Vref / 4095.0) * cell3Divider * cell3Calibration - cell1Voltage - cell2Voltage;
-  float totalVoltage = cell1Voltage + cell2Voltage + cell3Voltage; // Total voltage calculation and output message
+  currentStateRaw.voltages[0] = (adc->adc0->analogRead(cell1Pin) * Vref / 4095.0) * cell1Divider * cell1Calibration;
+  currentStateRaw.voltages[1] = (adc->adc0->analogRead(cell2Pin) * Vref / 4095.0) * cell2Divider * cell2Calibration - currentStateRaw.voltages[0];
+  currentStateRaw.voltages[2] = (adc->adc0->analogRead(cell3Pin) * Vref / 4095.0) * cell3Divider * cell3Calibration - currentStateRaw.voltages[0] - currentStateRaw.voltages[1];
+  currentStateRaw.totalVoltage = currentStateRaw.voltages[0] + currentStateRaw.voltages[1] + currentStateRaw.voltages[2]; // Total voltage calculation and output message
 
   // Calculating Charge State
-  float chargeState = calculate_Charge_state(totalVoltage);
+  currentStateRaw.chargeState = calculate_Charge_state(currentStateRaw.totalVoltage);
 
   //Serial print of current
-  float current = ampere.read();
+  currentStateRaw.current = ampere.read();
     // Apply current correction
-  if (current >= 24.0) {
-    current = current -0.68;
+  if (currentStateRaw.current >= 24.0) {
+    currentStateRaw.current = currentStateRaw.current -0.68;
   }
-  //else if (current >= 30.0) {
- //   current = current * 0.94;
+  //else if (currentStateRaw.current >= 30.0) {
+ //   currentStateRaw.current = currentStateRaw.current * 0.94;
  // }
 
 
   Serial.print("Strom: ");
-  Serial.print(current);
+  Serial.print(currentStateRaw.current);
   Serial.println(" A");
-  
-  //variables for temp 1,2,3
-  float temperature_1, temperature_2, temperature_3,temperature_4;
 
   // Read temperature from sensor 1
-  temperature_1 = temp.getTemperature(1, RTD_NOMINAL_1);
-  if (temperature_1 == -9999.0) {
+  currentStateRaw.temperatures[0] = temp.getTemperature(1, RTD_NOMINAL_1);
+  if (currentStateRaw.temperatures[0] == -9999.0) {
     Serial.println("Error reading temperature from sensor 1.");
   } else {
     Serial.print("Temperature 1: ");
-    Serial.println(temperature_1);
+    Serial.println(currentStateRaw.temperatures[0]);
   }
-  
+
   // Read temperature from sensor 2
-  temperature_2 = temp.getTemperature(2, RTD_NOMINAL_2);
-  if (temperature_2 == -9999.0) {
+  currentStateRaw.temperatures[1] = temp.getTemperature(2, RTD_NOMINAL_2);
+  if (currentStateRaw.temperatures[1] == -9999.0) {
     Serial.println("Error reading temperature from sensor 2.");
   } else {
     Serial.print("Temperature 2: ");
-    Serial.println(temperature_2);
+    Serial.println(currentStateRaw.temperatures[1]);
   }
-  
+
   // Read temperature from sensor 3
-  temperature_3 = temp.getTemperature(3, RTD_NOMINAL_3);
-  if (temperature_3 == -9999.0) {
+  currentStateRaw.temperatures[2] = temp.getTemperature(3, RTD_NOMINAL_3);
+  if (currentStateRaw.temperatures[2] == -9999.0) {
     Serial.println("Error reading temperature from sensor 3.");
   } else {
     Serial.print("Temperature 3: ");
-    Serial.println(temperature_3);
+    Serial.println(currentStateRaw.temperatures[2]);
   }
 
   // Read temperature from sensor 4
-  temperature_4 = temp.getTemperature(4, RTD_NOMINAL_4);
-  if (temperature_4 == -9999.0) {
+  currentStateRaw.temperatures[3] = temp.getTemperature(4, RTD_NOMINAL_4);
+  if (currentStateRaw.temperatures[3] == -9999.0) {
   Serial.println("Error reading temperature from sensor 4.");
   } else {
   Serial.print("Temperature 4: ");
-  Serial.println(temperature_4);
+  Serial.println(currentStateRaw.temperatures[3]);
 }
 
-
-  // Moving average filter for cell voltages
-  cell1Voltages[cell1Index] = cell1Voltage;
-  cell2Voltages[cell2Index] = cell2Voltage;
-  cell3Voltages[cell3Index] = cell3Voltage;
-
-  float cell1Filtered = 0;
-  float cell2Filtered = 0;
-  float cell3Filtered = 0;
-
-  for (int i = 0; i < filterSize; i++) {
-    cell1Filtered += cell1Voltages[i];
-    cell2Filtered += cell2Voltages[i];
-    cell3Filtered += cell3Voltages[i];
-  }
-
-  cell1Filtered /= filterSize;
-  cell2Filtered /= filterSize;
-  cell3Filtered /= filterSize;
-
-  cell1Index = (cell1Index + 1) % filterSize;
-  cell2Index = (cell2Index + 1) % filterSize;
-  cell3Index = (cell3Index + 1) % filterSize;
-
-  cell1Voltage = cell1Filtered;
-  cell2Voltage = cell2Filtered;
-  cell3Voltage = cell3Filtered;
+  currentStateFiltered = filter(currentStateRaw);
 
   // Write data to the log file
-  if (cell1Voltage > voltageThreshold || cell2Voltage > voltageThreshold || cell3Voltage > voltageThreshold) {
+  if (currentStateFiltered.voltages[0] > voltageThreshold || currentStateFiltered.voltages[1] > voltageThreshold || currentStateFiltered.voltages[2] > voltageThreshold) {
     loggingActive = true;
   } else {
     loggingActive = false;
@@ -263,23 +234,23 @@ void BatteryMonitor::loop() {
     if (logFile) {
       logFile.print(millis() / 1000.0, 2);
       logFile.print(", ");
-      logFile.print(cell1Voltage, 3);
+      logFile.print(currentStateFiltered.voltages[0], 3);
       logFile.print(", ");
-      logFile.print(cell2Voltage, 3);
+      logFile.print(currentStateFiltered.voltages[1], 3);
       logFile.print(", ");
-      logFile.print(cell3Voltage, 3);
+      logFile.print(currentStateFiltered.voltages[2], 3);
       logFile.print(",");
-      logFile.print(totalVoltage, 2);
+      logFile.print(currentStateFiltered.totalVoltage, 2);
       logFile.print(",");
-      logFile.print(current, 2);
+      logFile.print(currentStateFiltered.current, 2);
       logFile.print(",");
-      logFile.print(temperature_1, 2);
+      logFile.print(currentStateFiltered.temperatures[0], 2);
       logFile.print(",");
-      logFile.print(temperature_2, 2);
+      logFile.print(currentStateFiltered.temperatures[1], 2);
       logFile.print(",");
-      logFile.print(temperature_3, 2);
+      logFile.print(currentStateFiltered.temperatures[2], 2);
       logFile.print(",");
-      logFile.println(temperature_4, 2);
+      logFile.println(currentStateFiltered.temperatures[3], 2);
       logFile.println();
       logFile.close();
     } else {
@@ -296,12 +267,41 @@ void BatteryMonitor::loop() {
 
 
  // Mavlink message send cell voltages
-  mavlinkHandler.send_battery_status(cell1Voltage, cell2Voltage, cell3Voltage, chargeState); 
+  MavlinkMessages::send_battery_status(currentStateFiltered);
 
   //Display print of voltage values
-  myDisplay.Output(totalVoltage, current, temperature_1, temperature_2);
+  myDisplay.Output(currentStateFiltered);
 
+  checker.checkBatteryStatus(currentStateFiltered);
 
-  //delay(1000); // Wait for 1 second
+}
 
+BatteryState BatteryMonitor::filter(const BatteryState& raw)
+{
+  // Initialize filtered state
+  BatteryState filtered = raw;
+
+  // Moving average filter for cell voltages
+  voltages0[cellIndex] = raw.voltages[0];
+  voltages1[cellIndex] = raw.voltages[1];
+  voltages2[cellIndex] = raw.voltages[2];
+
+  filtered.voltages[0] = 0;
+  filtered.voltages[1] = 0;
+  filtered.voltages[2] = 0;
+
+  for (int i = 0; i < filterSize; i++) {
+    filtered.voltages[0] += voltages0[i];
+    filtered.voltages[1] += voltages1[i];
+    filtered.voltages[2] += voltages2[i];
+  }
+
+  filtered.voltages[0] /= filterSize;
+  filtered.voltages[1] /= filterSize;
+  filtered.voltages[2] /= filterSize;
+
+  // Increment pointers to buffer
+  cellIndex = (cellIndex + 1) % filterSize;
+
+  return filtered;
 }

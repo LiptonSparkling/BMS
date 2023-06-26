@@ -1,94 +1,82 @@
 #include "RFIDReader.h"
 
-RFIDReader::RFIDReader(byte ssPin, byte rstPin) : _mfrc522(ssPin, rstPin) {}
+RFIDReader::RFIDReader() : mfrc522(SS_PIN, RST_PIN) {}
 
-void RFIDReader::begin() {
-  SPI.begin();
-  _mfrc522.PCD_Init();
+void RFIDReader::initialize() {
+    SPI.begin();
+    mfrc522.PCD_Init();
+    delay(1000);
+    Serial.println("BMS RFID reading module initialized.");
 }
 
-bool RFIDReader::readCard() {
-  if (!_mfrc522.PICC_IsNewCardPresent()) {
-    return false;
+// Modify the readCard method
+RFIDReader::RFIDData RFIDReader::readCard() {
+ 
+  RFIDReader::RFIDData data;
+
+  if (!mfrc522.PICC_IsNewCardPresent() || !mfrc522.PICC_ReadCardSerial()) {
+    return data; // return empty data if no new card is present or if reading the card serial fails
   }
 
-  if (!_mfrc522.PICC_ReadCardSerial()) {
-    return false;
+  Serial.print("UID tag :");
+  String content = "";
+  for (byte i = 0; i < mfrc522.uid.size; i++) {
+    Serial.print(mfrc522.uid.uidByte[i] < 0x10 ? " 0" : " ");
+    Serial.print(mfrc522.uid.uidByte[i], HEX);
+    content.concat(String(mfrc522.uid.uidByte[i] < 0x10 ? " 0" : " "));
+    content.concat(String(mfrc522.uid.uidByte[i], HEX));
   }
+  Serial.println();
+  Serial.print("Start reading: ");
 
-  // Authenticate using key A
   byte sector = 1;
   byte key[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
   MFRC522::MIFARE_Key authKey;
   for (byte i = 0; i < 6; i++) {
     authKey.keyByte[i] = key[i];
   }
-  MFRC522::StatusCode status = _mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, sector * 4, &authKey, &(_mfrc522.uid));
+  MFRC522::StatusCode status = mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, sector * 4, &authKey, &(mfrc522.uid));
 
   if (status != MFRC522::STATUS_OK) {
     Serial.println("Authentication failed");
-    return false;
+    return data;
   }
 
   // Read data from the block
   byte blockAddr = 4;
-  byte bufferSize = sizeof(_buffer);
-  status = _mfrc522.MIFARE_Read(blockAddr, _buffer, &bufferSize);
+  byte buffer[18];
+  byte bufferSize = sizeof(buffer);
+  status = mfrc522.MIFARE_Read(blockAddr, buffer, &bufferSize);
 
   if (status != MFRC522::STATUS_OK) {
     Serial.println("Reading failed");
-    return false;
+    return data;
   }
 
-  _mfrc522.PICC_HaltA(); // Halt PICC
-  _mfrc522.PCD_StopCrypto1(); // Stop encryption on PCD
+  data.serialNumber = buffer[0];
+  data.capacity = (buffer[1] << 8) | buffer[2];
+  data.numCells = buffer[3];
 
-  return true;
+  float cellVoltage = buffer[4] + (float)buffer[5] / 100;
+  byte maxCapacityPercent = buffer[6];
+
+  Serial.print("Serial Number: ");
+  Serial.println(data.serialNumber);
+  Serial.print("Capacity: ");
+  Serial.println(data.capacity);
+  Serial.print("Number of Cells: ");
+  Serial.println(data.numCells);
+  Serial.print("Cell Voltage: ");
+  Serial.println(cellVoltage, 2);
+  Serial.print("Max Capacity Percent: ");
+  Serial.println(maxCapacityPercent);
+  Serial.println("Read data for BMS RFID-TAG complete!");
+
+
+  // Halt PICC
+  mfrc522.PICC_HaltA();
+  // Stop encryption on PCD
+  mfrc522.PCD_StopCrypto1();
+
+  return data;
 }
-
-
-byte RFIDReader::getSerialNumber() {
-  return _buffer[0];
-}
-
-int RFIDReader::getCapacity() {
-  return (_buffer[1] << 8) | _buffer[2];
-}
-
-byte RFIDReader::getNumCells() {
-  return _buffer[3];
-}
-
-float RFIDReader::getCellVoltage() {
-  return _buffer[4] + (float)_buffer[5] / 100;
-}
-
-byte RFIDReader::getMaxCapacityPercent() {
-  return _buffer[6];
-}
-
- /*
-void RFIDReader::displayinformation()
-
-{
-
-
-}
-
-
-  
-  readCard
-    if (rfidReader.readCard()) {
-    Serial.print("Serial Number: ");
-    Serial.println(rfidReader.getSerialNumber());
-    Serial.print("Capacity: ");
-    Serial.println(rfidReader.getCapacity());
-    Serial.print("Number of Cells: ");
-    Serial.println(rfidReader.getNumCells());
-    Serial.print("Cell Voltage: ");
-    Serial.println(rfidReader.getCellVoltage(), 2);
-    Serial.print("Max Capacity Percent: ");
-    Serial.println(rfidReader.getMaxCapacityPercent());
-  }
-
-*/

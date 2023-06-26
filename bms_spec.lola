@@ -1,0 +1,39 @@
+import math
+
+// Inputs
+input current: Float32
+
+input temperature_0: Float32
+input temperature_1: Float32
+input temperature_2: Float32
+input temperature_3: Float32
+
+input voltage_0: Float32
+input voltage_1: Float32
+input voltage_2: Float32
+
+// Constants
+constant bound_diff : Float32 := 0.03
+
+// Cell voltage differences
+output diff_vol_0_1 := abs(voltage_0 - voltage_1)
+output diff_vol_1_2 := abs(voltage_1 - voltage_2)
+output diff_vol_2_0 := abs(voltage_2 - voltage_0)
+
+trigger diff_vol_0_1 > bound_diff ∨ diff_vol_1_2 > bound_diff ∨ diff_vol_2_0 > bound_diff
+
+// Lower voltage bound
+constant lower_bound : Float32 := 3.0
+trigger voltage_0 < lower_bound ∨ voltage_1 < lower_bound ∨ voltage_2 < lower_bound
+
+// Upper current limit
+constant upper_bound_current : Float32 := 45.0
+trigger current > upper_bound_current
+
+// Consumption
+output consumption := current.aggregate(over: inf, using: integral).defaults(to: 0.0)
+trigger consumption > 3.0
+
+// Max temerature
+output max_temp := max(max(temperature_0, temperature_1), max(temperature_2, temperature_3))
+trigger max_temp > 60.0

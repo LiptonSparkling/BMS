@@ -23,11 +23,11 @@ float CURRENT::read() {
     sum += current;
     delay(5);
   }
-   float average_current = (sum / measurements); 
+   float average_current = (sum / measurements);
    return average_current;
  }
 
 // Current für Mavlink bereit stellen
 float CURRENT::getCurrent() {
-  return read(); 
+  return read();
 }

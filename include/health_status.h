@@ -1,16 +1,22 @@
 #ifndef HEALTH_STATUS_H
 #define HEALTH_STATUS_H
-#include "battery_monitor.h"
-#include "temperature.h"
 
+struct BatteryState;
 
-class BatteryChecker {
-public:
+#include <Arduino.h>
+
+extern "C" {
+    #include "lola_spec.h"
+}
+
+class BatteryChecker
+{
+    public:
     BatteryChecker();
-    void checkBatteryStatus();
+    void checkBatteryStatus(const BatteryState& state);
 
-private:
-    BatteryMonitor batteryMonitor;
+    private:
+    Memory memory;
 };
 
 #endif
